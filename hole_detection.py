@@ -8,6 +8,7 @@ colorInfo[:,1] = 0.75
 
 k = 0
 boundary_triangle = np.zeros([1000,3])
+boundary_line = np.zeros([1000,2])
 for i in range(len(mesh.triangles)) :
 
     a_triangular = np.asarray(mesh.triangles)[i] # 해당 순서의 면에 속하는 배열 추출
@@ -16,11 +17,13 @@ for i in range(len(mesh.triangles)) :
     first = np.asarray(mesh.triangles)[temp]                          # index로 해당 행렬 추출
 
     '''1번 to 2번'''
+    ans = np.where(first == a_triangular[1])
     number_of_tri = np.shape(np.where(first == a_triangular[1])[0])  # 첫 번째 꼭짓점에 연결된 삼각형들을 조사하여, 두 번째 꼭짓점에 맞닿는 애들을 조사
                                                                      # 이 때, 2라면, 2개의 삼각형이므로 면, 1이라면 1개의 삼각형이므로 hole
     if np.squeeze(number_of_tri) == 1 :
-        index_of_first = np.where(first == a_triangular[1])[0]
-        boundary_triangle[k, :] = first[index_of_first]               #경계선이 되는 삼각형을 배열로 저장
+        index_of_first = np.where(first == a_triangular[1])[0]        # index of first는 맞닿은 곳
+        boundary_triangle[k, :] = a_triangular               #경계선이 되는 삼각형을 배열로 저장
+        boundary_line[k, :]     = a_triangular[[0,1]]        # 삼각형의 1번과 2번 사이니까 그냥 1,2번 행렬을 저장
         k = k + 1
 
     """1번 to 3번"""
@@ -28,7 +31,8 @@ for i in range(len(mesh.triangles)) :
                                                                      # 이 때, 2라면, 2개의 삼각형이므로 면, 1이라면 1개의 삼각형이므로 hole
     if np.squeeze(number_of_tri) == 1 :
         index_of_first = np.where(first == a_triangular[2])[0]
-        boundary_triangle[k, :] = first[index_of_first]  # 경계선이 되는 삼각형을 배열로 저장
+        boundary_triangle[k, :] = a_triangular  # 경계선이 되는 삼각형을 배열로 저장
+        boundary_line[k, :]     = a_triangular[[0, 2]]  # 삼각형의 2번과 3번 사이니까 2,3번 행렬을 저장
         k = k + 1
 
 
@@ -41,7 +45,8 @@ for i in range(len(mesh.triangles)) :
     # 이 때, 2라면, 2개의 삼각형이므로 면, 1이라면 1개의 삼각형이므로 hole
     if np.squeeze(number_of_tri) == 1:
         index_of_first = np.where(second == a_triangular[2])[0]
-        boundary_triangle[k, :] = second[index_of_first]  # 경계선이 되는 삼각형을 배열로 저장
+        boundary_triangle[k, :] = a_triangular  # 경계선이 되는 삼각형을 배열로 저장
+        boundary_line[k, :]     = a_triangular[[1, 2]] # 삼각형의 2번과 3번 사이니까 2,3번 행렬을 저장
         k = k + 1
 
 """데이터 최적화 및 색칠 해주는 과정"""
@@ -50,9 +55,14 @@ boundary_triangle = np.delete(boundary_triangle, np.where(boundary_triangle == 0
 boundary_triangle = boundary_triangle.reshape([-1,3])                   #reshape하며 마무리. 이후 중복되는 값을 제거
 boundary_triangle = np.unique(boundary_triangle, axis=0).astype(np.int64)           #중복되는 값까지 제거.
 
-for u in range(len(boundary_triangle)) :
-    for v in range(3) :
-        colorInfo[boundary_triangle[u,v]] = [0,0,1]
+boundary_line = np.squeeze(boundary_line.reshape([1,-1]))
+boundary_line = np.delete(boundary_line, np.where(boundary_line == 0))
+boundary_line = boundary_line.reshape([-1,2]).astype(np.int64)
+
+
+for u in range(len(boundary_line)) :
+    for v in range(2) :
+        colorInfo[boundary_line[u,v]] = [0,0,1]
 
 mesh.vertex_colors = o3d.utility.Vector3dVector(colorInfo)
 
