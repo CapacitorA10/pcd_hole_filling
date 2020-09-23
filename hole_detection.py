@@ -52,8 +52,8 @@ boundary_triangle = boundary_triangle.reshape([-1,3])                   #reshape
 boundary_triangle = np.unique(boundary_triangle, axis=0).astype(np.int64)           #중복되는 값까지 제거.
 
 boundary_line = np.squeeze(boundary_line.reshape([1,-1]))
-boundary_vertex = np.unique(boundary_line).astype(np.int64)             # 일렬로 늘린 김에 vertex정보를 추출
 boundary_line = np.delete(boundary_line, np.where(boundary_line == 0))
+boundary_vertex = np.unique(boundary_line).astype(np.int64)             # 일렬로 늘린 김에 vertex정보를 추출
 boundary_line = boundary_line.reshape([-1,2]).astype(np.int64)
 
 #색칠하는 과정
