@@ -17,11 +17,9 @@ for i in range(len(mesh.triangles)) :
     first = np.asarray(mesh.triangles)[temp]                          # index로 해당 행렬 추출
 
     '''1번 to 2번'''
-    ans = np.where(first == a_triangular[1])
     number_of_tri = np.shape(np.where(first == a_triangular[1])[0])  # 첫 번째 꼭짓점에 연결된 삼각형들을 조사하여, 두 번째 꼭짓점에 맞닿는 애들을 조사
                                                                      # 이 때, 2라면, 2개의 삼각형이므로 면, 1이라면 1개의 삼각형이므로 hole
     if np.squeeze(number_of_tri) == 1 :
-        index_of_first = np.where(first == a_triangular[1])[0]        # index of first는 맞닿은 곳
         boundary_triangle[k, :] = a_triangular               #경계선이 되는 삼각형을 배열로 저장
         boundary_line[k, :]     = a_triangular[[0,1]]        # 삼각형의 1번과 2번 사이니까 그냥 1,2번 행렬을 저장
         k = k + 1
@@ -30,7 +28,6 @@ for i in range(len(mesh.triangles)) :
     number_of_tri = np.shape(np.where(first == a_triangular[2])[0])  # 첫 번째 꼭짓점에 연결된 삼각형들을 조사하여, 3 번째 꼭짓점에 맞닿는 애들을 조사
                                                                      # 이 때, 2라면, 2개의 삼각형이므로 면, 1이라면 1개의 삼각형이므로 hole
     if np.squeeze(number_of_tri) == 1 :
-        index_of_first = np.where(first == a_triangular[2])[0]
         boundary_triangle[k, :] = a_triangular  # 경계선이 되는 삼각형을 배열로 저장
         boundary_line[k, :]     = a_triangular[[0, 2]]  # 삼각형의 2번과 3번 사이니까 2,3번 행렬을 저장
         k = k + 1
@@ -44,7 +41,6 @@ for i in range(len(mesh.triangles)) :
     number_of_tri = np.shape(np.where(second == a_triangular[2])[0])  # 두 번째 꼭짓점에 연결된 삼각형들을 조사하여, 두 번째 꼭짓점에 맞닿는 애들을 조사
     # 이 때, 2라면, 2개의 삼각형이므로 면, 1이라면 1개의 삼각형이므로 hole
     if np.squeeze(number_of_tri) == 1:
-        index_of_first = np.where(second == a_triangular[2])[0]
         boundary_triangle[k, :] = a_triangular  # 경계선이 되는 삼각형을 배열로 저장
         boundary_line[k, :]     = a_triangular[[1, 2]] # 삼각형의 2번과 3번 사이니까 2,3번 행렬을 저장
         k = k + 1
