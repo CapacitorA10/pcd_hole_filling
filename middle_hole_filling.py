@@ -1,6 +1,7 @@
 import numpy as np
 import open3d as o3d
 from hole_detection import hole_detection
+from edge_swapping import edge_swapping
 
 mesh = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole2.ply")
 mesh_old = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole2.ply")
@@ -31,8 +32,6 @@ for i in range(len(boundary_vertex)):
             idx2 = np.where((the_other_lines == overlap_lines_i[k][1]))[0]
             the_other_lines = np.delete(the_other_lines, idx2, axis=0)
 
-
-
     #위에서 뽑아낸 line들로 triangle을 만드는 과정
     temp_triangles = np.zeros([len(other_lines_i),3])
     for j in range(len(other_lines_i)):
@@ -60,8 +59,6 @@ for i in range(len(boundary_vertex)):
         for k in range(3):
             p = tri[k]
             coordinate_tri[j,k,:] = np.asarray(mesh.vertices)[p]
-
-
 
     #좌표정보를 바탕으로 면적 구하기 https://darkpgmr.tistory.com/86
     s = 0
@@ -119,61 +116,11 @@ o3d.visualization.draw_geometries([mesh], mesh_show_wireframe=True) # 출력
 
 """Edge Swapping"""
 added_num = 3 * len(min_triangles)
-added_triangles = np.asarray(mesh.triangles)[len(triangles) - added_num : len(triangles)]   # 추가된 삼각형들을 추출
 
-added_tri_coop  = np.zeros([len(added_triangles),3,3])
-
-
-record = np.zeros(2 * len(added_triangles) + 1)
-
-for i in range(len(added_triangles)):
-
-    #if record에 존재하는 값 == 현재 찾으려는 값: ->하는 이유: 이미 수정 된 값을 다시 수정하려 하면 버그가 생기기 때문.
-    #    continue
-    rec = np.delete(record, np.where(record == 0) )
-    added_rec = rec - len(np.asarray(mesh_old.triangles))
-    if sum(added_rec == i) :
-        continue
-
-    '''swapping 시작'''
-    # 모든 삼각형을 순회하면서 현재 면과 겹치는 삼각형들을 조사
-    tri = added_triangles[i]
-    '''0-1번 겹치는 삼각형 찾기'''
-    idx1 = np.where(tri[0] == added_triangles)[0]   #added tri에서의 첫 번재 원소와 겹치는 행 조사
-    idx1 = np.delete(idx1, np.where(idx1 == i))     #현재 순회중인 삼각형의 index는 미리 제거
-    for j in idx1:
-        idx2 = np.where(tri[1] == added_triangles[j])   # 두 번째 원소와 겹치는 행 조사
-        if idx2[0] == 1:    # 이 if문을 통과하면, 두개의 삼각형 tri와 added_trianlges[j]가 맞닿은걸로 볼 수 있음
-            tri2 = added_triangles[j]
-            line = tri[np.where(tri == tri2)]   #line은 이제 이 두 삼각형의 중앙 선을 나타냄
-            line_length = np.linalg.norm(np.asarray(mesh.vertices)[line[0]] - np.asarray(mesh.vertices)[line[1]])   #이 두 점 거리를 계산
-            # 새로운 line을 찾아서 계산해보기
-            spot1 = tri[np.where(tri != tri2)]
-            spot2 = tri2[np.where(tri2 != tri)] # 원래 선이 아닌 다른 두 점을 추출
-            line_length_new = np.linalg.norm(np.asarray(mesh.vertices)[spot1] - np.asarray(mesh.vertices)[spot2])
-
-            if line_length_new < line_length: #새로 나온게 더 작다면 이걸로 대체함
-                swapped_tri1 = np.zeros([3])
-                swapped_tri2 = np.zeros([3]) #선언 먼저 하고, 하나씩 대입해야 오류가 안났음
-                swapped_tri1[0] = tri[0]
-                swapped_tri1[1] = spot1
-                swapped_tri1[2] = spot2
-                swapped_tri1 = swapped_tri1.astype(int)
-                swapped_tri2[0] = tri[1]
-                swapped_tri2[1] = spot1
-                swapped_tri2[2] = spot2
-                swapped_tri2 = swapped_tri2.astype(int)
-
-            old = np.asarray(mesh.triangles)    #기존 트라이앵글 불러옴
-            new = np.where((old == tri).all(axis=1))    #새 트라이앵글 넣을 주소
-            new2 = np.where((old == tri2).all(axis=1))
-            old[new] = swapped_tri1 #새 트라잉앵글 대입
-            old[new2] = swapped_tri2
-            #바뀐 점들의 좌표를 저장해놔서 다음 루프때 이 점은 지나지 않도록 주의하도록 하는 코드
-            record[2*i] = np.asarray(new)
-            record[2*i+1] = np.asarray(new2)
-            record = record.astype(int)
-            mesh.triangles = o3d.utility.Vector3iVector(old)
-
+mesh = edge_swapping(mesh, mesh_old, added_num,1)
+mesh = edge_swapping(mesh, mesh_old, added_num,2)
 o3d.visualization.draw_geometries([mesh], mesh_show_wireframe=True) # 출력
+
+
+#o3d.visualization.draw_geometries([mesh], mesh_show_wireframe=True) # 출력
 o3d.io.write_triangle_mesh("D:/pointcloud\\middle_hole_filling.ply", mesh)
