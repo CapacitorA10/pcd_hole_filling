@@ -2,8 +2,8 @@ import numpy as np
 import open3d as o3d
 from hole_detection import hole_detection
 
-mesh = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole3.ply")
-mesh_old = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole3.ply")
+mesh = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole2.ply")
+mesh_old = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole2.ply")
 _, boundary_line_i, boundary_vertex_i = hole_detection(mesh)
 #o3d.visualization.draw_geometries([mesh], mesh_show_wireframe=True) # 출력
 
@@ -40,6 +40,7 @@ for i in range(len(boundary_vertex)):
             coordinate_tri[j,k,:] = np.asarray(mesh.vertices)[p]
 
     #좌표정보를 바탕으로 면적 구하기 https://darkpgmr.tistory.com/86
+    s = 0
     for j in range(len(coordinate_tri)):
         a1 = coordinate_tri[j,1,0] - coordinate_tri[j,0,0]
         a2 = coordinate_tri[j,1,1] - coordinate_tri[j,0,1]
@@ -50,10 +51,10 @@ for i in range(len(boundary_vertex)):
         eq1 = ((a2 * b3) - (b2 * a3)) ** 2
         eq2 = ((b1 * a3) - (a1 * b3)) ** 2
         eq3 = ((a1 * b2) - (b1 * a2)) ** 2
-        s = np.sqrt(eq1 + eq2 + eq3)/2
-        s_sum[i] = s
+        s = s + np.sqrt(eq1 + eq2 + eq3)/2
+    s_sum[i] = s
 
-    # 현재 찾은 값이 가장 크다면 현재 상태 저장
+    # 현재 찾은 값이 가장 작다면 현재 상태 저장
     if min_s > s_sum[i]:
         min_triangles = temp_triangles
         min_coordinate = coordinate_tri
