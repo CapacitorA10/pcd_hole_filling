@@ -21,9 +21,17 @@ for i in range(len(boundary_vertex)):
 
     other_lines_i    = boundary_line_i
     #겹치지 않는 line을 뽑아내는 과정
+    the_other_lines = other_lines_i
     for j in range(2):
         idx = np.where((other_lines_i == overlap_lines_i[j]).all(axis=1))
         other_lines_i = np.delete(other_lines_i, idx, axis=0)
+        for k in range(2):
+            idx2 = np.where((the_other_lines == overlap_lines_i[k][0]))[0]
+            the_other_lines = np.delete(the_other_lines, idx2, axis=0)
+            idx2 = np.where((the_other_lines == overlap_lines_i[k][1]))[0]
+            the_other_lines = np.delete(the_other_lines, idx2, axis=0)
+
+
 
     #위에서 뽑아낸 line들로 triangle을 만드는 과정
     temp_triangles = np.zeros([len(other_lines_i),3])
@@ -32,12 +40,28 @@ for i in range(len(boundary_vertex)):
     temp_triangles = temp_triangles.astype(np.int64)
 
     # 각 triangles의 index정보를 다시 좌표정보로 변환
-    coordinate_tri = np.zeros([len(other_lines_i),3,3]) #1개의 index에 3개의 좌표가 있으므로 3차원 배열 생성
+    coordinate_tri2 = np.zeros([len(other_lines_i),3,3]) #1개의 index에 3개의 좌표가 있으므로 3차원 배열 생성
     for j in range(len(temp_triangles)):
         tri = temp_triangles[j]
         for k in range(3):
             p = tri[k]
+            coordinate_tri2[j,k,:] = np.asarray(mesh.vertices)[p]
+
+    # 면적을 구할 triangle만 뽑아내는 과정
+    temp_triangles_for_s = np.zeros([len(the_other_lines),3])
+    for j in range(len(the_other_lines)):
+        temp_triangles_for_s[j, :] = np.hstack([the_other_lines[j], present_point_i])
+    temp_triangles_for_s = temp_triangles_for_s.astype(np.int64)
+
+    # 각 면적 전용 triangle만들기
+    coordinate_tri = np.zeros([len(the_other_lines),3,3]) #1개의 index에 3개의 좌표가 있으므로 3차원 배열 생성
+    for j in range(len(temp_triangles_for_s)):
+        tri = temp_triangles_for_s[j]
+        for k in range(3):
+            p = tri[k]
             coordinate_tri[j,k,:] = np.asarray(mesh.vertices)[p]
+
+
 
     #좌표정보를 바탕으로 면적 구하기 https://darkpgmr.tistory.com/86
     s = 0
@@ -57,7 +81,7 @@ for i in range(len(boundary_vertex)):
     # 현재 찾은 값이 가장 작다면 현재 상태 저장
     if min_s > s_sum[i]:
         min_triangles = temp_triangles
-        min_coordinate = coordinate_tri
+        min_coordinate = coordinate_tri2
 
 """지금까지 looping을 통해 면적이 최소가 되는 삼각형을 찾았고"""
 '''이제 이들의 무게중심을 구하고 triangle을 씌우고 색칠까지ㄱ'''
