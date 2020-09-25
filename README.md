@@ -1,5 +1,15 @@
-# pcd_make_hole
+# hole filling algorithm
 
 
-그냥 구멍 뚫기 알고리즘
-랜덤변수로다가 아무 점 하나 집어서 거리 변수 크기만큼 없애버림
+구멍 뚫기 알고리즘
+-
+hole detection 알고리즘
+-
+hole cleaning 알고리즘
+-
+small hole filling
+-
+middle hole flling [진행중]
+-
+large hole filling
+-
