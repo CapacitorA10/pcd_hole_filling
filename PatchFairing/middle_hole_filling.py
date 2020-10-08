@@ -137,14 +137,13 @@ pcd2.estimate_normals(search_param=o3d.geometry.KDTreeSearchParamKNN(5))
 added_normals = np.asarray(pcd2.normals)
 
 ###############################STEP5################################
-weight_new_points = np.power(new_normals, -1)
-weight_added_points = np.power(added_normals, -1)
-
+weight_new_points = np.power(new_normals, -1) * new_points
+weight_added_points = np.power(added_normals, -1) * added_points
 
 for i in range(len(weight_added_points)):
     min = np.inf
     for j in range(len(weight_new_points)):
-        now = np.linalg.norm(weight_new_points[j] - weight_added_points[i])
+        now = np.linalg.norm(new_points[j] - added_points[i])
         if min > now:
             min = now
             minJ = j
