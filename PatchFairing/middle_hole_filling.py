@@ -7,8 +7,8 @@ from center_vertex_making import center_vertex_making
 from sklearn.neighbors import KDTree
 import random
 # mesh load
-mesh = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole2.ply")
-mesh_old = o3d.io.read_triangle_mesh("D:/pointcloud\\sphere_hole2.ply")
+mesh = o3d.io.read_triangle_mesh("D:/sphere/sphere_hole2.ply")
+mesh_old = o3d.io.read_triangle_mesh("D:/sphere/sphere_hole2.ply")
 
 # hole detect
 boundary_triangle, boundary_line_i, boundary_vertex_i = hole_detection(mesh)
@@ -84,11 +84,14 @@ for j in range(int(len(new_points)/2)):
     nearest_dist1, nearest_ind1 = tree1.query(new_points[0:int(len(new_points)/2),:], k=4)
     new_points[int(len(new_points)/2)+j] = ((boundary_points[nearest_ind1[j][0]]) + new_points[j])/2
 hole_points = np.concatenate((b_cood, new_points), axis=0)
+
+
 "반복"
 new_points = np.vstack([new_points,new_points])
 for j in range(int(len(new_points)/2)):
     nearest_dist1, nearest_ind1 = tree1.query(new_points[0:int(len(new_points)/2),:], k=4)
     new_points[int(len(new_points)/2)+j] = ((boundary_points[nearest_ind1[j][0]]) + new_points[j])/2
+
 hole_points = np.concatenate((b_cood, new_points), axis=0)
 "반복"
 new_points = np.vstack([new_points,new_points])
@@ -96,6 +99,19 @@ for j in range(int(len(new_points)/2)):
     nearest_dist1, nearest_ind1 = tree1.query(new_points[0:int(len(new_points)/2),:], k=4)
     new_points[int(len(new_points)/2)+j] = ((boundary_points[nearest_ind1[j][1]]) + new_points[j])/2
 hole_points = np.concatenate((b_cood, new_points), axis=0)
+"반복"
+new_points = np.vstack([new_points,new_points])
+for j in range(int(len(new_points)/2)):
+    nearest_dist1, nearest_ind1 = tree1.query(new_points[0:int(len(new_points)/2),:], k=4)
+    new_points[int(len(new_points)/2)+j] = ((boundary_points[nearest_ind1[j][1]]) + new_points[j])/2
+hole_points = np.concatenate((b_cood, new_points), axis=0)
+"반복"
+new_points = np.vstack([new_points,new_points])
+for j in range(int(len(new_points)/2)):
+    nearest_dist1, nearest_ind1 = tree1.query(new_points[0:int(len(new_points)/2),:], k=4)
+    new_points[int(len(new_points)/2)+j] = ((boundary_points[nearest_ind1[j][1]]) + new_points[j])/2
+hole_points = np.concatenate((b_cood, new_points), axis=0)
+
 
 #############################
 hole_points = np.concatenate((b_cood, new_points), axis=0)
@@ -155,3 +171,25 @@ p[len(p)-a : len(p)] = added_points
 
 mesh.vertices = o3d.utility.Vector3dVector(p)
 o3d.visualization.draw_geometries([mesh], mesh_show_wireframe=True) # 출력w
+
+"정사영 시작##############################################################################################################"
+
+distance=np.zeros([np.shape(new_points)[0],1])
+
+for i in range(len(added_points)):
+
+
+    for j in range(len(new_points)):
+        distance[j]=np.linalg.norm(np.cross(added_points[i]-new_points[j], added_normals[0]))
+
+    np.where(distance == np.min(distance))
+    added_points[i]=new_points[np.where(distance == np.min(distance))[0],:]
+
+full_points = np.vstack([np.asarray(mesh_old.vertices), added_points])
+full_pcd = o3d.geometry.PointCloud()
+full_pcd.points = o3d.utility.Vector3dVector(full_points)
+o3d.visualization.draw_geometries([full_pcd], mesh_show_wireframe=True) # 출력w
+
+mesh.vertices = o3d.utility.Vector3dVector(full_points)
+o3d.visualization.draw_geometries([mesh], mesh_show_wireframe=True) # 출력w
+"정사영 끝##############################################################################################################"
