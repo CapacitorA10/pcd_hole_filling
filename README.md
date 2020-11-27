@@ -13,9 +13,9 @@
 4.small hole filling
 ;
 
-5.middle hole flling [진행중]
+5.middle hole flling
 ;
 
-6.large hole filling
+6.large hole filling [미시행]
 ;
 
